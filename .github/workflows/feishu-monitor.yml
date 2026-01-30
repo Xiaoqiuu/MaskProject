@@ -1,0 +1,90 @@
+name: Feishu Project Monitor
+
+on:
+  # 1. 监听代码提交 (构建提醒)
+  push:
+    branches: [ "main", "master" ]
+  # 2. 监听 Issue 变动 (Issue 同步)
+  issues:
+    types: [opened, closed, reopened]
+
+jobs:
+  notify-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # --- 模拟构建/测试阶段 (仅在 Push 时运行) ---
+      - name: Run Build/Test Scripts
+        if: github.event_name == 'push'
+        run: |
+          echo "正在执行构建任务..."
+          # 在这里替换成你真实的构建命令，例如: npm install && npm test
+          sleep 5 # 模拟耗时
+          echo "构建完成"
+
+      # --- 场景 1: 代码构建结果通知 ---
+      - name: Notify Build Status (Push)
+        # if: always() 确保即使构建失败也会发送通知，且仅在 push 事件触发
+        if: always() && github.event_name == 'push'
+        uses: foxundermoon/feishu-action@v2
+        with:
+          url: ${{ secrets.FEISHU_BOT_WEBHOOK_URL }}
+          msg_type: post
+          content: |
+            post:
+              zh_cn:
+                title: 🚀 项目构建通知 (${{ job.status }})
+                content:
+                  - - tag: text
+                      text: "📦 仓库: "
+                    - tag: text
+                      text: "${{ github.repository }}"
+                  - - tag: text
+                      text: "\n🔨 分支: "
+                    - tag: text
+                      text: "${{ github.ref_name }}"
+                  - - tag: text
+                      text: "\n👤 提交人: "
+                    - tag: text
+                      text: "${{ github.actor }}"
+                  - - tag: text
+                      text: "\n📝 提交信息: "
+                    - tag: text
+                      text: "${{ github.event.head_commit.message }}"
+                  - - tag: text
+                      text: "\n"
+                  - - tag: a
+                      text: "👉 查看构建详情"
+                      href: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      # --- 场景 2: Issue 动态通知 ---
+      - name: Notify Issue Update
+        if: github.event_name == 'issues'
+        uses: foxundermoon/feishu-action@v2
+        with:
+          url: ${{ secrets.FEISHU_BOT_WEBHOOK_URL }}
+          msg_type: post
+          content: |
+            post:
+              zh_cn:
+                title: 🧩 Issue 动态提醒
+                content:
+                  - - tag: text
+                      text: "Action: "
+                    - tag: text
+                      text: "${{ github.event.action }}"
+                  - - tag: text
+                      text: "\n📌 标题: "
+                    - tag: text
+                      text: "${{ github.event.issue.title }}"
+                  - - tag: text
+                      text: "\n👤 操作人: "
+                    - tag: text
+                      text: "${{ github.actor }}"
+                  - - tag: text
+                      text: "\n"
+                  - - tag: a
+                      text: "👉 点击查看 Issue"
+                      href: "${{ github.event.issue.html_url }}"
