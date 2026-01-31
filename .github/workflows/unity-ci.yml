@@ -81,6 +81,8 @@ jobs:
                 title: "Unity ${{ matrix.testMode }} 测试反馈"
                 content:
                   - - tag: text
+                      text: "结果状态: ${{ job.status == 'success' && '✅ 成功' || '❌ 失败' }}\n"
+                  - - tag: text
                       text: "--------------------------------\n"
                   - - tag: a
                       text: "🔍 查看 GitHub 详细测试报告"
