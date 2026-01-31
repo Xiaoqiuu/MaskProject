@@ -6,7 +6,7 @@ using UnityEngine;
 public class SushiSpawner : MonoBehaviour
 {
     public bool isOn = false;
-    public float minTime = 1;
+    public float minTime = 1; // 寿司出现间隔 min max
     public float maxTime = 5;
     public float targetTime = 0;
     public float curTime = 0;

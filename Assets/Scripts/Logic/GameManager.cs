@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    
     // 游戏时
     public int Money = 0; // 赚取的货币
     public int sushiCount = 0; // 寿司的数量
@@ -34,15 +35,11 @@ public class GameManager : MonoBehaviour
         return 0f;
     }
     
-
-
-    // Start is called before the first frame update
     void Start()
     {
 
     }
 
-    // Update is called once per frame
     void Update()
     {
         
