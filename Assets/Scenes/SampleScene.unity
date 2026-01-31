@@ -244,8 +244,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isOn: 0
-  minTime: 1
-  maxTime: 5
+  minTime: 3
+  maxTime: 6
   targetTime: 0
   curTime: 0
   suShiPreFab: {fileID: 493323748456620394, guid: 8a615b11d3e0a664f95c25a7957086f6, type: 3}

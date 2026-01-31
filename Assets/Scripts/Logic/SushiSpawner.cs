@@ -7,10 +7,12 @@ public class SushiSpawner : MonoBehaviour
 {
     public bool isOn = false;
     public float minTime = 1;
-    public float maxTime = 5;
+    public float maxTime = 2;
     public float targetTime = 0;
     public float curTime = 0;
+    public float originSpeed = 6f;
     public SuShi suShiPreFab;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,6 +38,6 @@ public class SushiSpawner : MonoBehaviour
 
     protected void SpawnSushi () {
         SuShi sushi = Instantiate<SuShi>(suShiPreFab, this.transform);
-        sushi.GetComponent<Rigidbody2D>().AddForce(Vector2.right * 10);
+        sushi.GetComponent<Rigidbody2D>().velocity = Vector2.right * originSpeed;
     }
 }
