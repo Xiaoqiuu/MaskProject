@@ -2,6 +2,12 @@ name: Test package
 
 on: [push, pull_request]
 
+# 添加权限声明，解决 "Resource not accessible by integration" 报错
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   testAllModes:
     name: Test in ${{ matrix.testMode }}
@@ -9,10 +15,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 1. 既然是根目录，这里直接写 .
+        # 项目在根目录
         projectPath:
           - .
-        # 2. 必须用国际版版本号，确保能拉取 Docker 镜像
+        # 国际版镜像
         unityVersion: ['2022.3.48f1'] 
         testMode:
           - playmode
@@ -23,8 +29,7 @@ jobs:
         with:
           lfs: true
 
-      # 3. 核心修复：针对中国版 Unity 的 c1 后缀进行“欺骗”
-      # 因为项目在根目录，直接处理 ./ProjectSettings/ProjectVersion.txt
+      # 核心修复：移除中国版后缀 c1
       - name: Fix Unity China Version Suffix
         run: |
           VERSION_FILE="./ProjectSettings/ProjectVersion.txt"
@@ -33,7 +38,7 @@ jobs:
             sed -i 's/c[0-9]*//g' "$VERSION_FILE"
             echo "修改后: $(grep 'm_EditorVersion' $VERSION_FILE)"
           else
-            echo "错误：在根目录未找到 ProjectSettings/ProjectVersion.txt"
+            echo "错误：未找到项目文件"
             exit 1
           fi
 
@@ -45,13 +50,11 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           packageMode: false
-          # 这里引用 matrix 里的点号
           projectPath: ${{ matrix.projectPath }}
           unityVersion: ${{ matrix.unityVersion }}
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          # 关键：确保日志输出到控制台，方便查看后续可能出现的代码报错
           customParameters: "-nographics -logfile /dev/stdout"
 
       - name: Upload Test Results
