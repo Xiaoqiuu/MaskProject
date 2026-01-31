@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5284094157723166824
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4480720823061387657}
+  - component: {fileID: 3099461040432467781}
+  m_Layer: 0
+  m_Name: SushiSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4480720823061387657
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5284094157723166824}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3099461040432467781
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5284094157723166824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30eb0e2348e37be41a8a58446ccc3c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isOn: 0
+  minTime: 0.2
+  maxTime: 1
+  targetTime: 0
+  curTime: 0
+  originSpeed: 5
+  suShiPrefab: {fileID: 493323748456620394, guid: 8a615b11d3e0a664f95c25a7957086f6, type: 3}
+  fishSprites: []
+  prices: []
+  baseProbability:
+  - 0.17
+  - 0.18
+  - 0.27
+  - 0.38
+  baseBonus:
+  - 350
+  - 250
+  - 250
+  - 150
+  coefficient:
+  - 23
+  - 27
+  - 27
+  - 31
+  baseSp: 1
+  baseReward: 1
