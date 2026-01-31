@@ -10,10 +10,7 @@ public class GameManager : MonoBehaviour {
     // 游戏时
     public int Money = 0; // 赚取的货币
     public int sushiCount = 0; // 寿司的数量
-<<<<<<< HEAD
     public bool isHappy = false; // 是否开心
-=======
->>>>>>> 5a2322e1f34c9bef084997f03f94d7d5675ca973
 
     // 历史统计
     public int maxMoney = 0; // 历史最高赚取的货币
@@ -24,9 +21,6 @@ public class GameManager : MonoBehaviour {
     // 游戏数据
     private GameData gameData;
 
-<<<<<<< HEAD
-    
-=======
     public float bonusLevel = 0;
     public float rateLevel = 0;
     public float spLevel = 0;
@@ -47,7 +41,6 @@ public class GameManager : MonoBehaviour {
     private List<float> rates;
     private float total = 0;
 
->>>>>>> 5a2322e1f34c9bef084997f03f94d7d5675ca973
     // 获取当前时间的方法
     public float GetCurrentTime() {
         if (sushiSpawner != null) {
