@@ -1377,6 +1377,7 @@ MonoBehaviour:
   curTime: 0
   originSpeed: 564
   speedScale: 1
+  _scale: 1
   suShiPrefab: {fileID: 1165752144022230379, guid: 8a615b11d3e0a664f95c25a7957086f6, type: 3}
   fishSprites:
   - {fileID: 21300000, guid: 5d29823984ccac14d8b5bf01104db2aa, type: 3}
@@ -1384,6 +1385,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: d95be9c8969e1af40975b41bb180b9a3, type: 3}
   - {fileID: 21300000, guid: f8470110b35e0f3418c51a880263c424, type: 3}
   belt: {fileID: 1118482381}
+  sushiScale: 2
 --- !u!4 &1816594894
 Transform:
   m_ObjectHideFlags: 0
