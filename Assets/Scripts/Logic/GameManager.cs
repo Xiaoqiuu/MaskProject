@@ -11,7 +11,8 @@ public class GameManager : MonoBehaviour
     // 游戏时
     public int Money = 0; // 赚取的货币
     public int sushiCount = 0; // 寿司的数量
-    
+    public bool isHappy = false; // 是否开心
+
     // 历史统计
     public int maxMoney = 0; // 历史最高赚取的货币
     public int maxSushiCount = 0; // 历史最高的寿司数量
@@ -20,6 +21,7 @@ public class GameManager : MonoBehaviour
     
     // 游戏数据
     private GameData gameData;
+
     
     // 获取当前时间的方法
     public float GetCurrentTime()
