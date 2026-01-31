@@ -13,6 +13,7 @@ public class SushiSpawner : MonoBehaviour {
     public float curTime = 0;
     public float originSpeed = 564f;
     public float speedScale = 1.0f;
+    public float _scale = 1.0f; // sppedScale畜生被绿
     [SerializeField] private SuShi suShiPrefab;
     [SerializeField] private List<Sprite> fishSprites;
     public GameObject belt;
@@ -22,6 +23,18 @@ public class SushiSpawner : MonoBehaviour {
     public float sushiScale = 2.0f;
 
     private void Awake() {
+        // 根据屏幕分辨率设置_scale
+        int screenWidth = Screen.width;
+        if (screenWidth >= 2560) {
+            _scale = 0.8173f;
+        } else {
+            _scale = 1.0f; // 1920或其他分辨率默认1.0f
+        }
+        Animator beletAnimator = belt.GetComponent<Animator>();
+        beletAnimator.speed = speedScale * _scale;
+        
+        Debug.Log($"[SushiSpawner] 屏幕宽度: {screenWidth}, _scale: {_scale}");
+        
         GameManager.Instance.sushiSpawner = this;
         GameManager.Instance.OnSpecialModeUpdated += () => {
             if (GameManager.Instance.isSpecialMode) {
@@ -31,7 +44,7 @@ public class SushiSpawner : MonoBehaviour {
                 speedScale = 1.0f;
             }
             Animator beletAnimator = belt.GetComponent<Animator>();
-            beletAnimator.speed = speedScale;
+            beletAnimator.speed = speedScale * _scale;
         };
     }
 
