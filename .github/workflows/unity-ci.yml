@@ -27,21 +27,22 @@ jobs:
         with:
           lfs: true
 
-      # --- 优化 1: 缓存 Library 文件夹 ---
-      # 只有当 manifest.json 或版本号变化时，才会失效重新下载
       - name: Cache Library
         uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
+          # 为不同的测试模式区分缓存，防止互相覆盖导致的 Library 损坏
+          key: Library-${{ matrix.testMode }}-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
           restore-keys: |
+            Library-${{ matrix.testMode }}-
             Library-
 
       - name: Fix Unity China Version Suffix
         run: |
           VERSION_FILE="./ProjectSettings/ProjectVersion.txt"
           if [ -f "$VERSION_FILE" ]; then
-            sed -i 's/c[0-9]*//g' "$VERSION_FILE"
+            # 更精准的正则：只删掉 c1, c2 等后缀
+            sed -i 's/\(2022\.3\.[0-9]\+f[0-9]\+\)c[0-9]\+/\1/g' "$VERSION_FILE"
           fi
 
       - name: Run Unity Tests
@@ -58,13 +59,11 @@ jobs:
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          # --- 优化 2: 增加编译优化参数 ---
-          # -burst-disable-compilation: 禁用 Burst 编译以节省时间
-          # -no-quicksearch: 禁用搜索索引生成
-          customParameters: "-nographics -burst-disable-compilation -no-quicksearch -logfile /dev/stdout"
+          # 增加 -no-sandbox 提升 Linux 容器稳定性
+          customParameters: "-nographics -batchmode -no-sandbox -burst-disable-compilation -no-quicksearch -logfile /dev/stdout"
 
       - name: Upload Test Results
-        if: always() && steps.tests.outputs.artifactsPath != ''
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Test-results-for-${{ matrix.testMode }}
@@ -82,9 +81,11 @@ jobs:
                 title: "Unity ${{ matrix.testMode }} 测试反馈"
                 content:
                   - - tag: text
+                      text: "构建分支: ${{ github.ref_name }}\n"
+                  - - tag: text
                       text: "结果状态: ${{ job.status == 'success' && '✅ 成功' || '❌ 失败' }}\n"
                   - - tag: text
                       text: "--------------------------------\n"
                   - - tag: a
-                      text: "🔍 查看 GitHub 详细测试报告"
+                      text: "🔍 查看 GitHub 详细测试报告与日志"
                       href: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
