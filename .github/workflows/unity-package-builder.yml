@@ -67,6 +67,7 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           unityVersion: 2022.3.48f1 # 强制匹配 Docker 镜像版本
           androidExportType: 'androidPackage'
+          allowDirtyBuild: true
           
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
