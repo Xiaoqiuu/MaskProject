@@ -16,6 +16,10 @@ public class SushiSpawner : MonoBehaviour {
     [SerializeField] private SuShi suShiPrefab;
     [SerializeField] private List<Sprite> fishSprites;
     public GameObject belt;
+    
+    [Header("寿司大小设置")]
+    [Tooltip("寿司的缩放比例")]
+    public float sushiScale = 2.0f;
 
     private void Awake() {
         GameManager.Instance.sushiSpawner = this;
@@ -54,6 +58,10 @@ public class SushiSpawner : MonoBehaviour {
     protected void SpawnSushi() {
         SuShi sushi = Instantiate<SuShi>(suShiPrefab, this.transform);
         SetSushiType(sushi, GameManager.Instance.GetSuShiType());
+        
+        // 设置寿司大小
+        sushi.transform.localScale = Vector3.one * sushiScale;
+        
         Debug.Log($"sushi Type = {sushi.type}");
         sushi.GetComponent<Rigidbody2D>().velocity = Vector2.right * originSpeed * speedScale;
         sushi.OnFishAdded += () => {
