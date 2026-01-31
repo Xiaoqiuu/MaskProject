@@ -49,24 +49,6 @@ MonoBehaviour:
   maxTime: 1
   targetTime: 0
   curTime: 0
-  originSpeed: 5
-  suShiPrefab: {fileID: 493323748456620394, guid: 8a615b11d3e0a664f95c25a7957086f6, type: 3}
+  originSpeed: 564
+  suShiPrefab: {fileID: 1165752144022230379, guid: 8a615b11d3e0a664f95c25a7957086f6, type: 3}
   fishSprites: []
-  prices: []
-  baseProbability:
-  - 0.17
-  - 0.18
-  - 0.27
-  - 0.38
-  baseBonus:
-  - 350
-  - 250
-  - 250
-  - 150
-  coefficient:
-  - 23
-  - 27
-  - 27
-  - 31
-  baseSp: 1
-  baseReward: 1

@@ -34,6 +34,7 @@ public class SuShi : MonoBehaviour
     public void AddFish() {
         if (hasAdd) return;
         hasAdd = true;
+        Destroy(fish);
         Debug.Log("Add Fish!");
         OnFishAdded.Invoke();
     }
