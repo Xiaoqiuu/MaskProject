@@ -9,7 +9,6 @@ public class TraceObject : MonoBehaviour
     void Start()
     {
         InputSystem.OnPlayerInput += () => {
-            Debug.Log("Player Input");
             if (TraceSuShi) {
                 TraceSuShi.AddFish();
             }

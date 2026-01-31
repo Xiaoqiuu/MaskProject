@@ -65,12 +65,5 @@ public class InputListener : MonoBehaviour
         {
             Debug.Log("[InputListener] 执行判定：Perfect!");
         }
-        
-        // 示例：更新分数
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.Money += 10;
-            GameManager.Instance.sushiCount += 1;
-        }
     }
 }
