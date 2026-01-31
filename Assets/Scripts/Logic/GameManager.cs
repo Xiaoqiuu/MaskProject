@@ -14,7 +14,6 @@ public class GameManager : MonoBehaviour {
     public int combo = 0;
     public bool isSpecialMode = false; // 是否开心
     public float specialPoint = 0;
-    public float bonusPoint = 0;
 
     public float specialPointCD = 1.0f;
     public float curSPCD = 0;
@@ -60,7 +59,6 @@ public class GameManager : MonoBehaviour {
 
     public event Action OnComboUpdated;
     public event Action OnMoneyUpdated;
-    public event Action OnPointUpdated;
     public event Action OnSpecialPointUpdated;
     public event Action OnSpecialModeUpdated;
 
@@ -386,8 +384,8 @@ public class GameManager : MonoBehaviour {
         ++combo;
         OnComboUpdated?.Invoke();
 
-        bonusPoint += isSpecialMode ? GetSpecialBonus() : bonus;
-        OnPointUpdated?.Invoke();
+        Money += (int)Math.Round(isSpecialMode ? GetSpecialBonus() : bonus);
+        OnMoneyUpdated?.Invoke();
 
         if (combo % 100 == 0) {
             moneyScale = Math.Min(1.5f, moneyScale + 0.1f);
