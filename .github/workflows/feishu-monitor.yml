@@ -1,17 +1,14 @@
 name: Feishu Project Monitor
 
 on:
-  # 监听代码提交
   push:
     branches: [ "main", "master" ]
-  # 监听 Issue 变动
   issues:
     types: [opened, closed, reopened]
 
 jobs:
   notify-workflow:
     runs-on: ubuntu-latest
-    # 设置权限，确保可以读取仓库信息
     permissions:
       contents: read
       issues: read
@@ -20,16 +17,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # --- 1. 模拟构建/测试阶段 (如果是 Unity 项目，可以替换为你的测试步骤) ---
       - name: Run Build/Test Scripts
         if: github.event_name == 'push'
         run: |
-          echo "正在执行任务..."
+          echo "执行构建/测试任务..."
           sleep 2
-          echo "执行完成"
 
-      # --- 2. 飞书通知步骤 (关键修复：确保缩进在 steps 之下) ---
       - name: Notify Build Status
+        # 即使失败也发送通知
         if: always() && github.event_name == 'push'
         uses: foxundermoon/feishu-action@v2
         with:
@@ -57,12 +52,12 @@ jobs:
                     - tag: text
                       text: "${{ github.event.head_commit.message }}"
                   - - tag: text
-                      text: "\n"
+                      text: "\n--------------------------------"
                   - - tag: a
-                      text: "👉 查看构建详情"
-                      href: "https://github.com/${{ github.repository_actions/runs/${{ github.run_id }}"
+                      text: "🔍 查看完整流水线详情"
+                      # 关键修复点：这里的分隔符和括号现在是正确的了
+                      href: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-      # --- 3. Issue 动态通知 ---
       - name: Notify Issue Update
         if: github.event_name == 'issues'
         uses: foxundermoon/feishu-action@v2
@@ -75,7 +70,7 @@ jobs:
                 title: 🧩 Issue 动态提醒
                 content:
                   - - tag: text
-                      text: "Action: "
+                      text: "操作: "
                     - tag: text
                       text: "${{ github.event.action }}"
                   - - tag: text
