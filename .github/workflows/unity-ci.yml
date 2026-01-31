@@ -1,4 +1,4 @@
-name: Test project
+name: Test package
 
 on: [push, pull_request]
 
@@ -10,21 +10,17 @@ jobs:
       fail-fast: false
       matrix:
         projectPath:
-          - test-project
+          - MASKPROJECT
+        # 建议直接在 matrix 里只保留稳定的版本号
+        unityVersion: ['2022.3.48f1'] 
         testMode:
           - playmode
           - editmode
-          - standalone
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: actions/cache@v3
-        with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}
-          restore-keys: |
-            Library-
+
       - uses: game-ci/unity-test-runner@v4
         id: tests
         env:
@@ -32,19 +28,28 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
+          packageMode: false
           projectPath: ${{ matrix.projectPath }}
+          # 强制指定版本，避免它去读取 ProjectVersion.txt 里的 c1 后缀
+          unityVersion: ${{ matrix.unityVersion }}
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+my.assembly.*'
-      - uses: actions/upload-artifact@v4
-        if: always()
+          # 建议初次调试先简化 coverageOptions，确认跑通后再加全
+          coverageOptions: 'generateAdditionalMetrics'
+
+      - name: Upload Test Results
+        # 只有当路径变量确实存在时才运行，或者使用硬编码路径
+        if: always() && steps.tests.outputs.artifactsPath != ''
+        uses: actions/upload-artifact@v4
         with:
-          name: Test results for ${{ matrix.testMode }}
-          path: ${{ steps.tests.outputs.artifactsPath }}
-      - uses: actions/upload-artifact@v4
-        if: always()
+          name: Test-results-for-${{ matrix.testMode }}
+          path: ${{ matrix.testMode }}-artifacts
+
+      - name: Upload Coverage Results
+        if: always() && steps.tests.outputs.coveragePath != ''
+        uses: actions/upload-artifact@v4
         with:
-          name: Coverage results for ${{ matrix.testMode }}
+          name: Coverage-results-for-${{ matrix.testMode }}
           path: ${{ steps.tests.outputs.coveragePath }}
