@@ -10,13 +10,28 @@ public class SushiSpawner : MonoBehaviour {
     public float maxTime = 2;
     public float targetTime = 0;
     public float curTime = 0;
-    public float originSpeed = 6f;
+    public float originSpeed = 564f;
+    public float speedScale = 1.0f;
     [SerializeField] private SuShi suShiPrefab;
     [SerializeField] private List<Sprite> fishSprites;
+    public GameObject belt;
+
+    private void Awake() {
+        GameManager.Instance.sushiSpawner = this;
+        GameManager.Instance.OnSpecialModeUpdated += () => {
+            if (GameManager.Instance.isSpecialMode) {
+                speedScale = 1.25f;
+            }
+            else {
+                speedScale = 1.0f;
+            }
+            Animator beletAnimator = belt.GetComponent<Animator>();
+            beletAnimator.speed = speedScale;
+        };
+    }
 
     // Start is called before the first frame update
     void Start() {
-
     }
 
     // Update is called once per frame
@@ -39,7 +54,7 @@ public class SushiSpawner : MonoBehaviour {
         SuShi sushi = Instantiate<SuShi>(suShiPrefab, this.transform);
         SetSushiType(sushi, GameManager.Instance.GetSuShiType());
         Debug.Log($"sushi Type = {sushi.type}");
-        sushi.GetComponent<Rigidbody2D>().velocity = Vector2.right * originSpeed;
+        sushi.GetComponent<Rigidbody2D>().velocity = Vector2.right * originSpeed * speedScale;
         sushi.OnFishAdded += () => {
             GameManager.Instance.Success(sushi.bonus);
             Debug.Log("cur sushiCount = " + GameManager.Instance.sushiCount);

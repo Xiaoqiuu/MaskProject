@@ -3,8 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SuShi : MonoBehaviour
-{
+public class SuShi : MonoBehaviour {
     public GameObject rice;
     public GameObject fish;
     public float surviveTime = 8f;
@@ -20,15 +19,13 @@ public class SuShi : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
         Destroy(gameObject, surviveTime);
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        
+    void Update() {
+
     }
 
     public void DoAddFish() {
@@ -40,6 +37,10 @@ public class SuShi : MonoBehaviour
         hasAdd = true;
         DoAddFish();
         Debug.Log("Add Fish!");
-        OnFishAdded.Invoke();
+        OnFishAdded?.Invoke();
+    }
+
+    private void OnDestroy() {
+        if (!hasAdd) GameManager.Instance.Miss();
     }
 }

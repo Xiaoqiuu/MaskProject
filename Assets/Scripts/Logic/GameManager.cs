@@ -103,27 +103,29 @@ public class GameManager : MonoBehaviour {
     }
 
     void Update() {
-        curSPCD += Time.fixedTime;
         if (curSPCD >= specialPointCD) {
+            curSPCD = 0;
+            Debug.Log($"specialPoint = {specialPoint} specialMode = {isSpecialMode}");
             if (isSpecialMode) {
                 specialPoint = Math.Max(0, specialPoint - 1);
-                OnSpecialPointUpdated.Invoke();
+                OnSpecialPointUpdated?.Invoke();
 
                 if (specialPoint == 0) {
                     isSpecialMode = false;
-                    OnSpecialModeUpdated.Invoke();
+                    OnSpecialModeUpdated?.Invoke();
                 }
             }
             else {
                 specialPoint += GetSp();
-                OnSpecialPointUpdated.Invoke();
+                OnSpecialPointUpdated?.Invoke();
 
                 if (specialPoint >= 200) {
                     isSpecialMode = true;
-                    OnSpecialModeUpdated.Invoke();
+                    OnSpecialModeUpdated?.Invoke();
                 }
             }
         }
+        curSPCD += Time.deltaTime;
     }
 
     /// <summary>
@@ -240,14 +242,14 @@ public class GameManager : MonoBehaviour {
 
     public void Miss() {
         combo = 0;
-        OnComboUpdated.Invoke();
+        OnComboUpdated?.Invoke();
 
         if (!isSpecialMode) {
             Money = Math.Max(0, Money - 500);
-            OnMoneyUpdated.Invoke();
+            OnMoneyUpdated?.Invoke();
 
-            specialPoint = Math.Min(0, specialPoint - 40);
-            OnSpecialPointUpdated.Invoke();
+            specialPoint = Math.Max(0, specialPoint - 40);
+            OnSpecialPointUpdated?.Invoke();
         }
 
 
@@ -260,10 +262,10 @@ public class GameManager : MonoBehaviour {
         ++sushiCount;
 
         ++combo;
-        OnComboUpdated.Invoke();
+        OnComboUpdated?.Invoke();
 
         bonusPoint += isSpecialMode ? GetSpecialBonus() : bonus;
-        OnPointUpdated.Invoke();
+        OnPointUpdated?.Invoke();
 
         if (combo % 100 == 0) {
             moneyScale = Math.Min(1.5f, moneyScale + 0.1f);
