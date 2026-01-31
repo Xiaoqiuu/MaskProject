@@ -1,19 +1,35 @@
-steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4 # 建议升级到 v4
+name: Feishu Project Monitor
 
-      # --- 1. 这里替换为你真实的 Unity 测试/构建步骤 ---
-      - name: Run Build/Test
+on:
+  # 监听代码提交
+  push:
+    branches: [ "main", "master" ]
+  # 监听 Issue 变动
+  issues:
+    types: [opened, closed, reopened]
+
+jobs:
+  notify-workflow:
+    runs-on: ubuntu-latest
+    # 设置权限，确保可以读取仓库信息
+    permissions:
+      contents: read
+      issues: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # --- 1. 模拟构建/测试阶段 (如果是 Unity 项目，可以替换为你的测试步骤) ---
+      - name: Run Build/Test Scripts
         if: github.event_name == 'push'
         run: |
-          echo "执行 Unity 测试中..."
-          # 这里放你之前的 unity-test-runner 步骤，或者简单的模拟命令
-          # exit 1 # 取消注释可以测试失败通知
+          echo "正在执行任务..."
           sleep 2
+          echo "执行完成"
 
-      # --- 2. 代码构建结果通知 (成功或失败都会触发) ---
+      # --- 2. 飞书通知步骤 (关键修复：确保缩进在 steps 之下) ---
       - name: Notify Build Status
-        # always() 确保前面步骤挂了也会发通知；仅在 push 事件时运行
         if: always() && github.event_name == 'push'
         uses: foxundermoon/feishu-action@v2
         with:
@@ -22,7 +38,6 @@ steps:
           content: |
             post:
               zh_cn:
-                # 根据 job.status 动态显示标题
                 title: "项目构建结果: ${{ job.status == 'success' && '✅ 成功' || '❌ 失败' }}"
                 content:
                   - - tag: text
@@ -42,12 +57,12 @@ steps:
                     - tag: text
                       text: "${{ github.event.head_commit.message }}"
                   - - tag: text
-                      text: "\n--------------------------------"
+                      text: "\n"
                   - - tag: a
-                      text: "🔍 查看完整流水线详情"
-                      href: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                      text: "👉 查看构建详情"
+                      href: "https://github.com/${{ github.repository_actions/runs/${{ github.run_id }}"
 
-      # --- 3. Issue 动态通知 (保持不变) ---
+      # --- 3. Issue 动态通知 ---
       - name: Notify Issue Update
         if: github.event_name == 'issues'
         uses: foxundermoon/feishu-action@v2
@@ -60,7 +75,7 @@ steps:
                 title: 🧩 Issue 动态提醒
                 content:
                   - - tag: text
-                      text: "操作: "
+                      text: "Action: "
                     - tag: text
                       text: "${{ github.event.action }}"
                   - - tag: text
@@ -68,5 +83,5 @@ steps:
                     - tag: text
                       text: "${{ github.event.issue.title }}"
                   - - tag: a
-                      text: "\n👉 点击进入 Issue 详情"
+                      text: "\n👉 点击查看 Issue"
                       href: "${{ github.event.issue.html_url }}"
