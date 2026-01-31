@@ -20,6 +20,8 @@ public static class GameBalance
     
     // 寿司出现最大概率
     public static List<float> MaxRate = new List<float> { 45f, 30f, 15f, 10f };
+
+    public static float MaxSp = 200f;
     
     // SP积攒速度基础值
     public static float BaseSp = 1f;
