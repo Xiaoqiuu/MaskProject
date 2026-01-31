@@ -12,8 +12,9 @@ on:
 
 # 2. 可选优化：防止同一个分支多次提交导致构建任务堆积
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ matrix.targetPlatform }}-${{ github.ref }}
   cancel-in-progress: true
+
 
 jobs:
   build:
