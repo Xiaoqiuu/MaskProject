@@ -1,103 +1,64 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Playables;
+using UnityEngine.UI;
 
 /// <summary>
-/// 角色动画控制器
-/// 接收输入事件后激活目标 GameObject，等待 30 帧后自动关闭
-/// 激活期间忽略所有新的输入
-/// 兼容 Timeline 和 Animator
+/// 角色帧动画控制器
+/// 放手序列：1 1 2 3 4
+/// 抬手序列：4 3 2 1 1
+/// 支持动画期间打断并切换方向
 /// </summary>
+[RequireComponent(typeof(Image))]
 public class CharacterAnimation : MonoBehaviour
 {
-    [Header("目标对象")]
-    [Tooltip("需要激活/关闭的 GameObject")]
-    public GameObject targetObject;
+    [Header("动画帧设置")]
+    [Tooltip("4张动画帧图片")]
+    public Sprite[] animationFrames = new Sprite[4];
     
-    [Header("激活设置")]
-    [Tooltip("激活持续的帧数")]
-    public int activeFrames = 30;
-    
-    [Header("Timeline 兼容")]
-    [Tooltip("如果使用 Timeline，拖入 PlayableDirector 组件")]
-    public PlayableDirector playableDirector;
-    
-    [Tooltip("是否在激活时播放 Timeline")]
-    public bool playTimelineOnActivate = false;
+    [Header("播放设置")]
+    [Tooltip("每帧持续时间（秒），默认1帧 = 1/60秒")]
+    public float frameTime = 1f / 60f;
     
     [Header("调试信息")]
     public bool showDebugLog = false;
-
-    [Header("bug修复")]
-    public GameObject g1;
-    public GameObject g2;
-    public GameObject g3;
-    public GameObject g4;
     
-    // 状态标记
-    private bool isActive = false;
-    private Coroutine activeCoroutine;
-    private bool wasTimelineControlled = false;
+    // 组件引用
+    private Image characterImage;
+    
+    // 动画状态
+    private bool isPlaying = false;
+    private Coroutine animationCoroutine;
+    
+    // 动画方向：true = 放手（1→4），false = 抬手（4→1）
+    private bool isGoingDown = true;
+    
+    // 当前显示的帧（0-3，对应图片1-4）
+    private int currentFrame = 0;
+    
+    // 放手序列：1 1 2 3 4（索引：0 0 1 2 3）
+    private readonly int[] downSequence = { 0, 0, 1, 2, 3 };
+    
+    // 抬手序列：4 3 2 1 1（索引：3 2 1 0 0）
+    private readonly int[] upSequence = { 3, 2, 1, 0, 0 };
+    
+    void Awake()
+    {
+        characterImage = GetComponent<Image>();
+        
+        if (characterImage == null)
+        {
+            Debug.LogError("[CharacterAnimation] 未找到 Image 组件！");
+        }
+    }
     
     void Start()
     {
-        // 自动查找 PlayableDirector
-        if (playableDirector == null && targetObject != null)
-        {
-            playableDirector = targetObject.GetComponent<PlayableDirector>();
-        }
-        
-        // 确保目标对象初始状态为关闭
-        if (targetObject != null)
-        {
-            targetObject.SetActive(false);
-        }
-        else
-        {
-            Debug.LogWarning("[CharacterAnimation] 未设置目标对象！请在 Inspector 中设置 Target Object");
-        }
+        // 设置默认第一帧
+        SetFrame(0);
         
         if (showDebugLog)
         {
             Debug.Log("[CharacterAnimation] 角色动画控制器已初始化");
-            if (playableDirector != null)
-            {
-                Debug.Log("[CharacterAnimation] 检测到 PlayableDirector，已启用 Timeline 兼容模式");
-            }
-        }
-    }
-    
-    void LateUpdate()
-    {
-        // 检测 Timeline 是否在控制对象
-        if (playableDirector != null && targetObject != null)
-        {
-            bool isTimelineControlling = playableDirector.state == PlayState.Playing;
-            
-            // 如果 Timeline 开始控制，记录状态
-            if (isTimelineControlling && !wasTimelineControlled)
-            {
-                wasTimelineControlled = true;
-                if (showDebugLog)
-                {
-                    Debug.Log("[CharacterAnimation] Timeline 开始控制对象");
-                }
-            }
-            // 如果 Timeline 停止控制，恢复脚本控制
-            else if (!isTimelineControlling && wasTimelineControlled)
-            {
-                wasTimelineControlled = false;
-                if (showDebugLog)
-                {
-                    Debug.Log("[CharacterAnimation] Timeline 停止控制，恢复脚本控制");
-                }
-                
-                // 确保对象状态正确
-                if (!isActive)
-                {
-                    targetObject.SetActive(false);
-                }
-            }
         }
     }
     
@@ -118,10 +79,10 @@ public class CharacterAnimation : MonoBehaviour
         InputSystem.OnPlayerInput -= OnPlayerInputReceived;
         
         // 停止协程
-        if (activeCoroutine != null)
+        if (animationCoroutine != null)
         {
-            StopCoroutine(activeCoroutine);
-            activeCoroutine = null;
+            StopCoroutine(animationCoroutine);
+            animationCoroutine = null;
         }
         
         if (showDebugLog)
@@ -137,172 +98,283 @@ public class CharacterAnimation : MonoBehaviour
     {
         if (showDebugLog)
         {
-            Debug.Log($"[CharacterAnimation] 收到输入事件，当前状态: isActive={isActive}");
+            Debug.Log($"[CharacterAnimation] 收到输入 - 当前帧:{currentFrame + 1}, 方向:{(isGoingDown ? "放手" : "抬手")}, 播放中:{isPlaying}");
         }
         
-        // 如果正在激活状态，忽略新的输入
-        if (isActive)
+        // 如果正在播放动画
+        if (isPlaying)
         {
-            if (showDebugLog)
+            // 如果当前是抬手动作，切换为放手动作
+            if (!isGoingDown)
             {
-                Debug.LogWarning("[CharacterAnimation] ❌ 正在激活状态，忽略输入");
-            }
-            return;
-        }
-        
-        // 激活目标对象
-        ActivateTarget();
-    }
-    
-    /// <summary>
-    /// 激活目标对象
-    /// </summary>
-    public void ActivateTarget()
-    {
-        if (targetObject == null)
-        {
-            Debug.LogError("[CharacterAnimation] 目标对象未设置！");
-            return;
-        }
-        
-        // 再次检查状态，防止重复调用
-        if (isActive)
-        {
-            if (showDebugLog)
-            {
-                Debug.LogWarning("[CharacterAnimation] ❌ 已经在激活状态，取消本次调用");
-            }
-            return;
-        }
-        
-        // 立即设置为激活状态，防止重复触发
-        isActive = true;
-        
-        // 如果已经有协程在运行，先停止
-        if (activeCoroutine != null)
-        {
-            StopCoroutine(activeCoroutine);
-        }
-        
-        // 开始激活协程
-        activeCoroutine = StartCoroutine(ActivateCoroutine());
-    }
-    
-    /// <summary>
-    /// 激活协程：激活对象 → 等待指定帧数 → 关闭对象
-    /// </summary>
-    private IEnumerator ActivateCoroutine()
-    {
-        // 如果 Timeline 正在播放，先停止
-        if (playableDirector != null && playableDirector.state == PlayState.Playing)
-        {
-            playableDirector.Stop();
-            if (showDebugLog)
-            {
-                Debug.Log("[CharacterAnimation] 停止 Timeline 播放");
-            }
-        }
-        
-        // 激活目标对象
-        targetObject.SetActive(true);
-        
-        if (showDebugLog)
-        {
-            Debug.Log($"[CharacterAnimation] ✅ 激活目标对象，将在 {activeFrames} 帧后关闭");
-        }
-        
-        // 如果需要播放 Timeline
-        if (playTimelineOnActivate && playableDirector != null)
-        {
-            playableDirector.time = 0;
-            playableDirector.Play();
-            if (showDebugLog)
-            {
-                Debug.Log("[CharacterAnimation] 播放 Timeline");
-            }
-        }
-        
-        // 等待指定帧数
-        int waitedFrames = 0;
-        while (waitedFrames < activeFrames)
-        {
-            // 检查 Time.timeScale，如果为 0 则不计数（暂停状态）
-            if (Time.timeScale > 0)
-            {
-                waitedFrames++;
-                
-                if (showDebugLog && waitedFrames % 10 == 0)
+                if (showDebugLog)
                 {
-                    Debug.Log($"[CharacterAnimation] 已等待 {waitedFrames}/{activeFrames} 帧");
+                    Debug.Log($"[CharacterAnimation] 打断抬手动作，切换为放手，从帧 {currentFrame + 1} 继续");
+                }
+                
+                // 切换方向
+                isGoingDown = true;
+                
+                // 停止当前协程
+                if (animationCoroutine != null)
+                {
+                    StopCoroutine(animationCoroutine);
+                }
+                
+                // 从当前帧继续放手动作
+                animationCoroutine = StartCoroutine(PlayFromCurrentFrame());
+            }
+            else
+            {
+                // 如果已经是放手动作，忽略输入
+                if (showDebugLog)
+                {
+                    Debug.Log("[CharacterAnimation] 已经在放手，忽略输入");
                 }
             }
+        }
+        else
+        {
+            // 没有播放动画，开始放手动作
+            StartDownAnimation();
+        }
+    }
+    
+    /// <summary>
+    /// 开始放手动画（完整序列）
+    /// </summary>
+    private void StartDownAnimation()
+    {
+        if (animationCoroutine != null)
+        {
+            StopCoroutine(animationCoroutine);
+        }
+        
+        isGoingDown = true;
+        animationCoroutine = StartCoroutine(PlayDownSequence());
+    }
+    
+    /// <summary>
+    /// 从当前帧继续播放
+    /// </summary>
+    private IEnumerator PlayFromCurrentFrame()
+    {
+        isPlaying = true;
+        
+        if (showDebugLog)
+        {
+            Debug.Log($"[CharacterAnimation] 从帧 {currentFrame + 1} 继续放手");
+        }
+        
+        // 找到当前帧在放手序列中的位置
+        int startIndex = -1;
+        for (int i = 0; i < downSequence.Length; i++)
+        {
+            if (downSequence[i] == currentFrame)
+            {
+                startIndex = i;
+                break;
+            }
+        }
+        
+        // 如果找不到，从下一帧开始
+        if (startIndex == -1)
+        {
+            startIndex = currentFrame;
+        }
+        
+        // 从当前位置继续播放放手序列
+        for (int i = startIndex; i < downSequence.Length; i++)
+        {
+            currentFrame = downSequence[i];
+            SetFrame(currentFrame);
             
-            yield return null; // 等待一帧
+            if (showDebugLog)
+            {
+                Debug.Log($"[CharacterAnimation] 放手 [{i}/{downSequence.Length - 1}] 显示帧 {currentFrame + 1}");
+            }
+            
+            yield return new WaitForSeconds(frameTime);
         }
         
-        // 停止 Timeline（如果在播放）
-        if (playableDirector != null && playableDirector.state == PlayState.Playing)
+        // 放手完成，开始抬手
+        if (showDebugLog)
         {
-            playableDirector.Stop();
+            Debug.Log("[CharacterAnimation] 放手完成，开始抬手");
         }
         
-        // 关闭目标对象
-        targetObject.SetActive(false);
-        g1.SetActive(true);
-        g2.SetActive(false);
-        g3.SetActive(false);
-        g4.SetActive(false);
+        isGoingDown = false;
+        animationCoroutine = StartCoroutine(PlayUpSequence());
+    }
+    
+    /// <summary>
+    /// 播放完整的放手序列
+    /// </summary>
+    private IEnumerator PlayDownSequence()
+    {
+        isPlaying = true;
         
         if (showDebugLog)
         {
-            Debug.Log("[CharacterAnimation] ✅ 关闭目标对象，可以接收新输入");
+            Debug.Log("[CharacterAnimation] 开始放手动作");
         }
         
-        // 重置状态
-        isActive = false;
-        activeCoroutine = null;
+        // 播放放手序列：1 1 2 3 4
+        for (int i = 0; i < downSequence.Length; i++)
+        {
+            currentFrame = downSequence[i];
+            SetFrame(currentFrame);
+            
+            if (showDebugLog)
+            {
+                Debug.Log($"[CharacterAnimation] 放手 [{i}/{downSequence.Length - 1}] 显示帧 {currentFrame + 1}");
+            }
+            
+            yield return new WaitForSeconds(frameTime);
+        }
+        
+        // 放手完成，开始抬手
+        if (showDebugLog)
+        {
+            Debug.Log("[CharacterAnimation] 放手完成，开始抬手");
+        }
+        
+        isGoingDown = false;
+        animationCoroutine = StartCoroutine(PlayUpSequence());
     }
     
     /// <summary>
-    /// 手动触发激活（用于测试）
+    /// 播放抬手序列
     /// </summary>
-    public void TriggerActivation()
+    private IEnumerator PlayUpSequence()
     {
-        if (!isActive)
-        {
-            ActivateTarget();
-        }
-    }
-    
-    /// <summary>
-    /// 强制停止并关闭目标对象
-    /// </summary>
-    public void ForceStop()
-    {
-        if (activeCoroutine != null)
-        {
-            StopCoroutine(activeCoroutine);
-            activeCoroutine = null;
-        }
-        
-        if (targetObject != null)
-        {
-            targetObject.SetActive(false);
-        }
-        
-        isActive = false;
+        isPlaying = true;
         
         if (showDebugLog)
         {
-            Debug.Log("[CharacterAnimation] 强制停止");
+            Debug.Log("[CharacterAnimation] 开始抬手动作");
+        }
+        
+        // 播放抬手序列：4 3 2 1 1
+        for (int i = 0; i < upSequence.Length; i++)
+        {
+            currentFrame = upSequence[i];
+            SetFrame(currentFrame);
+            
+            if (showDebugLog)
+            {
+                Debug.Log($"[CharacterAnimation] 抬手 [{i}/{upSequence.Length - 1}] 显示帧 {currentFrame + 1}");
+            }
+            
+            yield return new WaitForSeconds(frameTime);
+        }
+        
+        // 抬手完成，回到待机状态
+        currentFrame = 0;
+        SetFrame(0);
+        isPlaying = false;
+        animationCoroutine = null;
+        
+        if (showDebugLog)
+        {
+            Debug.Log("[CharacterAnimation] 抬手完成，回到待机");
         }
     }
     
     /// <summary>
-    /// 检查是否正在激活状态
+    /// 设置显示的帧
     /// </summary>
-    public bool IsActive()
+    private void SetFrame(int frameIndex)
     {
-        return isActive;
+        if (characterImage == null || animationFrames == null || frameIndex < 0 || frameIndex >= animationFrames.Length)
+        {
+            return;
+        }
+        
+        if (animationFrames[frameIndex] != null)
+        {
+            characterImage.sprite = animationFrames[frameIndex];
+        }
+        else
+        {
+            Debug.LogWarning($"[CharacterAnimation] 帧 {frameIndex + 1} 的图片未设置！");
+        }
+    }
+    
+    /// <summary>
+    /// 验证动画帧是否完整
+    /// </summary>
+    private bool ValidateFrames()
+    {
+        if (animationFrames == null || animationFrames.Length != 4)
+        {
+            Debug.LogError("[CharacterAnimation] 动画帧数组必须包含4张图片！");
+            return false;
+        }
+        
+        for (int i = 0; i < animationFrames.Length; i++)
+        {
+            if (animationFrames[i] == null)
+            {
+                Debug.LogError($"[CharacterAnimation] 动画帧 {i + 1} 未设置！");
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// 手动触发动画（用于测试）
+    /// </summary>
+    public void TriggerAnimation()
+    {
+        OnPlayerInputReceived();
+    }
+    
+    /// <summary>
+    /// 强制停止动画
+    /// </summary>
+    public void StopAnimation()
+    {
+        if (animationCoroutine != null)
+        {
+            StopCoroutine(animationCoroutine);
+            animationCoroutine = null;
+        }
+        
+        isPlaying = false;
+        currentFrame = 0;
+        isGoingDown = true;
+        SetFrame(0);
+        
+        if (showDebugLog)
+        {
+            Debug.Log("[CharacterAnimation] 动画已强制停止");
+        }
+    }
+    
+    /// <summary>
+    /// 检查是否正在播放
+    /// </summary>
+    public bool IsPlaying()
+    {
+        return isPlaying;
+    }
+    
+    /// <summary>
+    /// 获取当前帧索引（0-3）
+    /// </summary>
+    public int GetCurrentFrameIndex()
+    {
+        return currentFrame;
+    }
+    
+    /// <summary>
+    /// 获取当前动画方向
+    /// </summary>
+    public bool IsGoingDown()
+    {
+        return isGoingDown;
     }
 }
