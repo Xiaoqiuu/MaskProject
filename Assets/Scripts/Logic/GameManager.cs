@@ -19,25 +19,23 @@ public class GameManager : MonoBehaviour {
     public SushiSpawner sushiSpawner;
 
     // 游戏数据
-    private GameData gameData;
+    public GameData gameData;
 
-    public float bonusLevel = 0;
-    public float rateLevel = 0;
-    public float spLevel = 0;
-    public float rewardLevel = 0;
+    [Header("调试选项")]
+    [Tooltip("勾选此项，下次运行游戏时会清除存档并重置金币和等级")]
+    public bool resetSaveOnStart = true;
 
-    public List<float> baseBonus = new List<float> { 350f, 250f, 250f, 150f };
-    public List<float> coefficient = new List<float> { 23f, 27f, 27f, 31f };
-    public List<float> baseRate = new List<float> { 10f, 15f, 30f, 45f };
-    public List<float> maxRate = new List<float> { 45f, 30f, 15f, 10f };
-    public float baseSp = 1f;
-    public float baseReward = 1f;
+    public int bonusLevel = 0;
+    public int rateLevel = 0;
+    public int spLevel = 0;
+    public int rewardLevel = 0;
 
-    public float baseBonusPrice = 1800;
-    public float baseRatePrice = 2000;
-    public float baseSpPrice = 2200;
-    public float baseRewardPrice = 2000;
-
+    public enum UpgradeType {
+        Bonus,
+        Rate,
+        Sp,
+        Reward
+    }
     private List<float> rates;
     private float total = 0;
 
@@ -81,8 +79,18 @@ public class GameManager : MonoBehaviour {
             return;
         }
 
-        // 游戏启动时加载数据
-        LoadGameData();
+        //****Debug, 游戏启动时加载数据
+        if (resetSaveOnStart)
+        {
+            ResetSaveData();
+        }
+        else
+        {
+            LoadGameData();
+        }
+        
+        // 强制检查：如果是第一次运行或者想强制重置，可以取消下面这行的注释
+        // ResetSaveData(); 
     }
 
     void Start() {
@@ -100,8 +108,21 @@ public class GameManager : MonoBehaviour {
         gameData = JsonDataManager.LoadData();
         maxMoney = gameData.maxMoney;
         maxSushiCount = gameData.maxSushiCount;
+        
+        bonusLevel = gameData.bonusLevel;
+        rateLevel = gameData.rateLevel;
+        spLevel = gameData.spLevel;
+        rewardLevel = gameData.rewardLevel;
 
-        Debug.Log($"加载数据 - 最高金币: {maxMoney}, 最高寿司数: {maxSushiCount}");
+        Debug.Log($"加载数据 - 最高金币: {maxMoney}, 持有金币: {gameData.coins}, 升级等级: [{bonusLevel},{rateLevel},{spLevel},{rewardLevel}]");
+
+        // [测试专用] 如果金币不足，自动补充，方便测试扣费
+        if (gameData.coins < 1000)
+        {
+            gameData.coins = GameBalance.InitialCoins; // 默认为 100000
+            Debug.Log($"[测试助手] 检测到金币不足，已自动为您补充到 {gameData.coins} 以便测试商店功能！");
+            SaveGameData(); // 保存修改
+        }
     }
 
     /// <summary>
@@ -122,6 +143,12 @@ public class GameManager : MonoBehaviour {
         gameData.maxSushiCount = maxSushiCount;
         gameData.lastPlayTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         gameData.totalGamesPlayed++;
+        
+        // 保存升级数据
+        gameData.bonusLevel = bonusLevel;
+        gameData.rateLevel = rateLevel;
+        gameData.spLevel = spLevel;
+        gameData.rewardLevel = rewardLevel;
 
         // 保存到JSON文件
         JsonDataManager.SaveData(gameData);
@@ -138,6 +165,11 @@ public class GameManager : MonoBehaviour {
             sushiSpawner.isOn = false;
         }
 
+        // 结算金币到钱包
+        if (gameData != null) {
+            gameData.coins += Money;
+        }
+
         // 保存游戏数据
         SaveGameData();
 
@@ -149,29 +181,112 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// 重置存档（用于测试或清除数据）
     /// </summary>
+    [ContextMenu("强制重置存档(ResetSave)")]
     public void ResetSaveData() {
         JsonDataManager.DeleteSaveFile();
         gameData = new GameData();
+        
+        // 测试模式：给予初始金币
+        gameData.coins = GameBalance.InitialCoins;
+        
         maxMoney = 0;
         maxSushiCount = 0;
+        bonusLevel = 0;
+        rateLevel = 0;
+        spLevel = 0;
+        rewardLevel = 0;
 
-        Debug.Log("存档已重置");
+        Debug.Log($"存档已重置，已发放初始测试金币: {GameBalance.InitialCoins}，所有等级重置为 0 (UI显示为Lv1)");
+        
+        // 立即保存一次，确保初始金币被写入
+        SaveGameData();
+    }
+
+    /// <summary>
+    /// 获取升级价格
+    /// 默认价格增长公式：BasePrice * (1.15 ^ Level)
+    /// </summary>
+    public int GetUpgradePrice(UpgradeType type) {
+        float basePrice = 0;
+        int currentLevel = 0;
+
+        switch (type) {
+            case UpgradeType.Bonus:
+                basePrice = GameBalance.BaseBonusPrice;
+                currentLevel = bonusLevel;
+                break;
+            case UpgradeType.Rate:
+                basePrice = GameBalance.BaseRatePrice;
+                currentLevel = rateLevel;
+                break;
+            case UpgradeType.Sp:
+                basePrice = GameBalance.BaseSpPrice;
+                currentLevel = spLevel;
+                break;
+            case UpgradeType.Reward:
+                basePrice = GameBalance.BaseRewardPrice;
+                currentLevel = rewardLevel;
+                break;
+        }
+
+        return (int)basePrice;
+    }
+
+    /// <summary>
+    /// 尝试购买升级
+    /// </summary>
+    public bool BuyUpgrade(UpgradeType type) {
+        int price = GetUpgradePrice(type);
+        
+        if (gameData.coins >= price) {
+            gameData.coins -= price;
+            
+            switch (type) {
+                case UpgradeType.Bonus: bonusLevel++; break;
+                case UpgradeType.Rate: rateLevel++; break;
+                case UpgradeType.Sp: spLevel++; break;
+                case UpgradeType.Reward: rewardLevel++; break;
+            }
+            
+            // 同步回 gameData 并保存
+            gameData.bonusLevel = bonusLevel;
+            gameData.rateLevel = rateLevel;
+            gameData.spLevel = spLevel;
+            gameData.rewardLevel = rewardLevel;
+            
+            SaveGameData();
+            Debug.Log($"购买成功: {type}, 新等级: {GetLevel(type)}, 剩余金币: {gameData.coins}");
+            return true;
+        }
+        
+        Debug.Log($"购买失败: 金币不足。需要 {price}, 拥有 {gameData.coins}", this);
+        return false;
+    }
+    
+    public int GetLevel(UpgradeType type) {
+        switch (type) {
+            case UpgradeType.Bonus: return bonusLevel;
+            case UpgradeType.Rate: return rateLevel;
+            case UpgradeType.Sp: return spLevel;
+            case UpgradeType.Reward: return rewardLevel;
+            default: return 0;
+        }
     }
 
     public float GetBonus(int type) {
-        return (float)(baseBonus[type] + coefficient[type] * Math.Pow(bonusLevel, 0.7));
+        return (float)(GameBalance.BaseBonus[type] + GameBalance.Coefficient[type] * Math.Pow(bonusLevel, 0.7));
     }
 
     public float GetRate(int type) {
-        return (float)(baseRate[type] + (maxRate[type] - baseRate[type]) * (1 - 1 / (1 + 0.25 * rateLevel)));
+        return (float)(GameBalance.BaseRate[type] + (GameBalance.MaxRate[type] - GameBalance.BaseRate[type]) * (1 - 1 / (1 + 0.25 * rateLevel)));
     }
 
     public float GetSp() {
-        return (float)(baseSp + 0.8 * Math.Pow(spLevel, 0.5));
+        return (float)(GameBalance.BaseSp + 0.8 * Math.Pow(spLevel, 0.5));
     }
 
     public float GetReward() {
-        return (float)(baseReward * Math.Pow(1.03, rewardLevel));
+        return (float)(GameBalance.BaseReward * Math.Pow(1.03, rewardLevel));
     }
 
     public void InitRate() {
