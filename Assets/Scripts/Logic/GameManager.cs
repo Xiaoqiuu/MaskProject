@@ -236,6 +236,15 @@ public class GameManager : MonoBehaviour {
         rates = null;
         total = 0;
         Debug.Log($"游戏结束 - 本局金币: {Money}, 本局寿司数: {sushiCount}");
+        
+        // 触发场景过渡动画
+        GameSceneTransition transition = FindObjectOfType<GameSceneTransition>();
+        if (transition != null) {
+            transition.CloseDoorsAndExit();
+        }
+        else {
+            Debug.LogWarning("[GameManager] 找不到 GameSceneTransition 组件");
+        }
     }
 
     /// <summary>
