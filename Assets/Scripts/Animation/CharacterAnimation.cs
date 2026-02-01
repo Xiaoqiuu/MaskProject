@@ -67,6 +67,20 @@ public class CharacterAnimation : MonoBehaviour
         // 订阅输入事件
         InputSystem.OnPlayerInput += OnPlayerInputReceived;
         
+        // 重置到初始状态
+        if (characterImage != null)
+        {
+            currentFrame = 0;
+            isGoingDown = true;
+            isPlaying = false;
+            SetFrame(0);
+            
+            if (showDebugLog)
+            {
+                Debug.Log("[CharacterAnimation] GameObject重新激活，已重置到初始状态");
+            }
+        }
+        
         if (showDebugLog)
         {
             Debug.Log("[CharacterAnimation] 已订阅输入事件");

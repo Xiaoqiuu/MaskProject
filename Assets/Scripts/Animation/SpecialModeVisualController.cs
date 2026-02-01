@@ -369,6 +369,40 @@ public class SpecialModeVisualController : MonoBehaviour
         specialCharacter.SetActive(false);
         normalCharacter.SetActive(true);
         
+        // 等待一帧，确保所有组件的OnEnable被调用
+        yield return null;
+        
+        // 重新初始化角色动画状态
+        if (normalCharacter != null)
+        {
+            // 获取CharacterAnimation组件并重置
+            CharacterAnimation charAnim = normalCharacter.GetComponent<CharacterAnimation>();
+            if (charAnim != null)
+            {
+                charAnim.StopAnimation();
+                
+                if (showDebugLog)
+                {
+                    Debug.Log("[SpecialModeVisualController] 已重置角色动画状态");
+                }
+            }
+            
+            // 确保CharacterOutlineHover组件所在的GameObject是激活的
+            CharacterOutlineHover[] hoverComponents = normalCharacter.GetComponentsInChildren<CharacterOutlineHover>(true);
+            foreach (var hover in hoverComponents)
+            {
+                if (!hover.gameObject.activeSelf)
+                {
+                    hover.gameObject.SetActive(true);
+                    
+                    if (showDebugLog)
+                    {
+                        Debug.Log($"[SpecialModeVisualController] 激活 CharacterOutlineHover: {hover.gameObject.name}");
+                    }
+                }
+            }
+        }
+        
         // 渐变背景：特殊背景从左到右消失
         float elapsedTime = 0f;
         

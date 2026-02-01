@@ -60,6 +60,48 @@ public class CharacterOutlineHover : MonoBehaviour, IPointerEnterHandler, IPoint
         InputSystem.OnPlayerInput += OnInputInvoke;
     }
     
+    void OnEnable()
+    {
+        // GameObject被重新激活时，重置状态
+        isMouseOver = false;
+        isHandlingInputInvoke = false;
+        
+        // 停止所有协程
+        if (delayCheckCoroutine != null)
+        {
+            StopCoroutine(delayCheckCoroutine);
+            delayCheckCoroutine = null;
+        }
+        
+        // 确保白边隐藏
+        if (outlineImage != null)
+        {
+            outlineImage.gameObject.SetActive(false);
+        }
+        
+        if (showDebugLog)
+        {
+            Debug.Log($"[CharacterOutlineHover] {gameObject.name} 已重新激活，状态已重置");
+        }
+    }
+    
+    void OnDisable()
+    {
+        // GameObject被停用时，停止所有协程
+        if (delayCheckCoroutine != null)
+        {
+            StopCoroutine(delayCheckCoroutine);
+            delayCheckCoroutine = null;
+        }
+        
+        isHandlingInputInvoke = false;
+        
+        if (showDebugLog)
+        {
+            Debug.Log($"[CharacterOutlineHover] {gameObject.name} 已停用");
+        }
+    }
+    
     void OnDestroy()
     {
         // 取消订阅输入事件
@@ -72,6 +114,16 @@ public class CharacterOutlineHover : MonoBehaviour, IPointerEnterHandler, IPoint
     private void OnInputInvoke()
     {
         if (outlineImage == null) return;
+        
+        // 检查当前GameObject是否激活
+        if (!gameObject.activeInHierarchy)
+        {
+            if (showDebugLog)
+            {
+                Debug.LogWarning($"[CharacterOutlineHover] GameObject {gameObject.name} 未激活，无法启动协程");
+            }
+            return;
+        }
         
         // 立即隐藏白边（输入invoke权限最大）
         outlineImage.gameObject.SetActive(false);

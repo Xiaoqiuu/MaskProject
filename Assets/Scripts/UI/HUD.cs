@@ -12,10 +12,10 @@ public class HUD : MonoBehaviour
     [SerializeField] private Text ComboCount;
     [SerializeField] private Text Combo;
     [SerializeField] private Button PauseButton;
-    [SerializeField] private Button StoreButton; // 新增：商店按钮
+    [SerializeField] private Button StoreButton;
 
-    [SerializeField] private GameObject Panel; // 恢复：用于自动注册给 GameManager
-    [SerializeField] private GameObject StorePanel; // 新增：用于自动注册商店面板
+    [SerializeField] private GameObject Panel;
+    [SerializeField] private GameObject StorePanel;
 
     [Header("Shop UI")]
     [SerializeField] private Button BuyBonusLevel;
@@ -31,41 +31,41 @@ public class HUD : MonoBehaviour
     [SerializeField] private Text SpLevel;
     [SerializeField] private Text SpecialBonusLevel;
 
-    // Start is called before the first frame update
     void Start()
     {
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("HUD: GameManager.Instance 为 null！");
+            return;
+        }
+
         BonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Bonus).ToString();
         RatePrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Rate).ToString();
         SpPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Sp).ToString();
         SpecialBonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus).ToString();
-        // 自动将 HUD 里的 Panel 注册给 GameManager
-        // 这样即使 GameManager 是跨场景保留的旧单例，也能找到当前场景的面板
+
         if (Panel != null)
         {
             GameManager.Instance.pausePanel = Panel;
 
-            // 设置半透明白色背景，使面板突出
             Image panelImage = Panel.GetComponent<Image>();
             if (panelImage == null)
             {
-                // 如果没有 Image 组件，自动添加一个
                 panelImage = Panel.AddComponent<Image>();
             }
-            panelImage.color = new Color(1f, 1f, 1f, 0.85f); // 85% 不透明度的白色
+            panelImage.color = new Color(1f, 1f, 1f, 0.85f);
 
-            Panel.SetActive(false); // 确保初始是隐藏的
+            Panel.SetActive(false);
         }
         else
         {
             Debug.LogError("HUD: 请在 Inspector 中将 PausePanel 拖给 HUD 的 Panel 槽位！");
         }
 
-        // 自动注册 StorePanel
         if (StorePanel != null)
         {
             GameManager.Instance.storePanel = StorePanel;
 
-            // 确保 ShopUI 初始化
             ShopUI shopUI = StorePanel.GetComponent<ShopUI>();
             if (shopUI != null)
             {
@@ -73,84 +73,23 @@ public class HUD : MonoBehaviour
             }
         }
 
-        GameManager.Instance.OnComboChanged += (int combo) =>
-        {
-            if (combo != 0)
-            {
-                ComboCount.gameObject.SetActive(true);
-                Combo.gameObject.SetActive(true);
-                ComboCount.text = $"x{combo}";
-            }
-            else
-            {
-                ComboCount.gameObject.SetActive(false);
-                Combo.gameObject.SetActive(false);
-            }
-        };
+        // 订阅事件 - 使用方法引用
+        GameManager.Instance.OnComboChanged += OnComboChanged;
+        GameManager.Instance.OnSpecialPointChanged += OnSpecialPointChanged;
+        GameManager.Instance.OnMoneyChanged += OnMoneyChanged;
+        GameManager.Instance.OnBonusLevelChanged += OnBonusLevelChanged;
+        GameManager.Instance.OnRateLevelChanged += OnRateLevelChanged;
+        GameManager.Instance.OnSpLevelChanged += OnSpLevelChanged;
+        GameManager.Instance.OnSpecialBonusLevelChanged += OnSpecialBonusLevelChanged;
+        GameManager.Instance.OnPauseStateChanged += OnPauseStateChanged;
 
-        GameManager.Instance.OnSpecialPointChanged += (float specialPoint) =>
-        {
-            SpBar.size = specialPoint / GameBalance.MaxSp;
-            SpCount.text = $"{Math.Floor(specialPoint)}/{GameBalance.MaxSp}";
-        };
+        // 按钮事件
+        PauseButton.onClick.AddListener(() => GameManager.Instance.PauseGame());
+        BuyBonusLevel.onClick.AddListener(() => GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.Bonus));
+        BuyRateLevel.onClick.AddListener(() => GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.Rate));
+        BuySpLevel.onClick.AddListener(() => GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.Sp));
+        BuySpecialBonusLevel.onClick.AddListener(() => GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.SpecialBonus));
 
-        GameManager.Instance.OnMoneyChanged += (int money) =>
-        {
-            // 修复合并产生的乱码，暂时只显示数字
-            CoinsCount.text = "￥" + money.ToString();
-        };
-
-        GameManager.Instance.OnBonusLevelChanged += (int bonusLevel) =>
-        {
-            BonusLevel.text = bonusLevel.ToString();
-            BonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Bonus).ToString();
-        };
-
-        GameManager.Instance.OnRateLevelChanged += (int rateLevel) =>
-        {
-            RateLevel.text = rateLevel.ToString();
-            RatePrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Rate).ToString();
-        };
-
-        GameManager.Instance.OnSpLevelChanged += (int spLevel) =>
-        {
-            SpLevel.text = spLevel.ToString();
-            SpPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Sp).ToString();
-        };
-
-        GameManager.Instance.OnSpecialBonusLevelChanged += (int specialBonusLevel) =>
-        {
-            SpecialBonusLevel.text = specialBonusLevel.ToString();
-            SpecialBonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus).ToString();
-        };
-
-        PauseButton.onClick.AddListener(() =>
-        {
-            // 强制调用 PauseGame 而不是 TogglePause
-            // 这样即使 Inspector 和代码双重绑定，也只会执行多次“暂停”，而不会导致“暂停又恢复”
-            GameManager.Instance.PauseGame();
-        });
-
-        BuyBonusLevel.onClick.AddListener(() =>
-        {
-            GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.Bonus);
-        });
-
-        BuyRateLevel.onClick.AddListener(() =>
-        {
-            GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.Rate);
-        });
-
-        BuySpLevel.onClick.AddListener(() =>
-        {
-            GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.Sp);
-        });
-
-        BuySpecialBonusLevel.onClick.AddListener(() =>
-        {
-            GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.SpecialBonus);
-        });
-        // 绑定商店按钮
         if (StoreButton != null)
         {
             StoreButton.onClick.AddListener(() =>
@@ -159,15 +98,70 @@ public class HUD : MonoBehaviour
                 GameManager.Instance.OpenShop();
             });
         }
+    }
 
-        // 监听暂停状态，暂停时隐藏按钮，恢复时显示
-        GameManager.Instance.OnPauseStateChanged += OnPauseStateChanged;
+    private void OnComboChanged(int combo)
+    {
+        if (ComboCount == null || Combo == null) return;
 
-        // 绑定商店按钮事件 (防止空引用报错)
-        if (BuyBonusLevel != null) BuyBonusLevel.onClick.AddListener(() => { });
-        if (BuyRateLevel != null) BuyRateLevel.onClick.AddListener(() => { });
-        if (BuySpLevel != null) BuySpLevel.onClick.AddListener(() => { });
-        if (BuySpecialBonusLevel != null) BuySpecialBonusLevel.onClick.AddListener(() => { });
+        if (combo != 0)
+        {
+            ComboCount.gameObject.SetActive(true);
+            Combo.gameObject.SetActive(true);
+            ComboCount.text = $"x{combo}";
+        }
+        else
+        {
+            ComboCount.gameObject.SetActive(false);
+            Combo.gameObject.SetActive(false);
+        }
+    }
+
+    private void OnSpecialPointChanged(float specialPoint)
+    {
+        if (SpBar == null || SpCount == null) return;
+
+        SpBar.size = specialPoint / GameBalance.MaxSp;
+        SpCount.text = $"{Math.Floor(specialPoint)}/{GameBalance.MaxSp}";
+    }
+
+    private void OnMoneyChanged(int money)
+    {
+        if (CoinsCount == null) return;
+
+        CoinsCount.text = "￥" + money.ToString();
+    }
+
+    private void OnBonusLevelChanged(int bonusLevel)
+    {
+        if (BonusLevel == null || BonusPrice == null || GameManager.Instance == null) return;
+
+        BonusLevel.text = bonusLevel.ToString();
+        BonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Bonus).ToString();
+    }
+
+    private void OnRateLevelChanged(int rateLevel)
+    {
+        if (RateLevel == null || RatePrice == null || GameManager.Instance == null) return;
+
+        RateLevel.text = rateLevel.ToString();
+        RatePrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Rate).ToString();
+    }
+
+    private void OnSpLevelChanged(int spLevel)
+    {
+        if (SpLevel == null || SpPrice == null || GameManager.Instance == null) return;
+
+        SpLevel.text = spLevel.ToString();
+        SpPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Sp).ToString();
+    }
+
+    private void OnSpecialBonusLevelChanged(int specialBonusLevel)
+    {
+        if (SpecialBonusLevel == null || SpecialBonusPrice == null || GameManager.Instance == null) return;
+
+        SpecialBonusLevel.text = specialBonusLevel.ToString();
+        SpecialBonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus).ToString();
     }
 
     private void OnPauseStateChanged(bool isPaused)
@@ -187,14 +181,18 @@ public class HUD : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnPauseStateChanged -= OnPauseStateChanged;
+            GameManager.Instance.OnComboChanged -= OnComboChanged;
+            GameManager.Instance.OnSpecialPointChanged -= OnSpecialPointChanged;
+            GameManager.Instance.OnMoneyChanged -= OnMoneyChanged;
+            GameManager.Instance.OnBonusLevelChanged -= OnBonusLevelChanged;
+            GameManager.Instance.OnRateLevelChanged -= OnRateLevelChanged;
+            GameManager.Instance.OnSpLevelChanged -= OnSpLevelChanged;
+            GameManager.Instance.OnSpecialBonusLevelChanged -= OnSpecialBonusLevelChanged;
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // 自动修复 Canvas 丢失 Camera 的问题 (防止 DontDestroyOnLoad 后 UI 消失)
-        // 只有当 Canvas 模式为 ScreenSpace - Camera 时才需要
         Canvas canvas = GetComponent<Canvas>();
         if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceCamera && canvas.worldCamera == null)
         {
