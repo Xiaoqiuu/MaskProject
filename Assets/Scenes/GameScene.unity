@@ -505,7 +505,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -2389.74, y: -88}
+  m_AnchoredPosition: {x: -2024.7, y: -101.17}
   m_SizeDelta: {x: 157.516, y: 157.88}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &162615977
@@ -559,18 +559,6 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: OpenShop
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -1324,7 +1312,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 69226779}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
         m_MethodName: ResumeGame
         m_Mode: 1
@@ -2072,8 +2060,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+      - m_Target: {fileID: 1835023596}
+        m_TargetAssemblyTypeName: ShopUI, Assembly-CSharp
         m_MethodName: CloseShop
         m_Mode: 1
         m_Arguments:
@@ -2383,8 +2371,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+      - m_Target: {fileID: 1835023596}
+        m_TargetAssemblyTypeName: ShopUI, Assembly-CSharp
         m_MethodName: OpenShop
         m_Mode: 1
         m_Arguments:
@@ -2661,6 +2649,7 @@ GameObject:
   - component: {fileID: 1413665427}
   - component: {fileID: 1413665429}
   - component: {fileID: 1413665428}
+  - component: {fileID: 1413665430}
   m_Layer: 5
   m_Name: Text (Legacy)
   m_TagString: Untagged
@@ -2729,6 +2718,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1413665426}
   m_CullTransparentMesh: 1
+--- !u!114 &1413665430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1413665426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6db6f9e9f4a27f645973ed5db337dc5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelRoot: {fileID: 1835023594}
+  coinText: {fileID: 0}
+  closeButton: {fileID: 0}
+  openButton: {fileID: 0}
+  itemTemplate: {fileID: 0}
+  contentRoot: {fileID: 0}
+  shopConfigs: []
 --- !u!1 &1447701627
 GameObject:
   m_ObjectHideFlags: 0
@@ -3414,7 +3422,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 728287004247902062, guid: c8b4a82b04391054bbb4625bea0687ff, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1470087308741070935, guid: c8b4a82b04391054bbb4625bea0687ff, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -3567,7 +3575,7 @@ PrefabInstance:
     - target: {fileID: 6443756879899228600, guid: c8b4a82b04391054bbb4625bea0687ff, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 69226779}
     - target: {fileID: 6443756879899228600, guid: c8b4a82b04391054bbb4625bea0687ff, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
