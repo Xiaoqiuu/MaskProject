@@ -107,7 +107,8 @@ public class GameManager : MonoBehaviour {
         // 单例模式实现
         if (Instance == null) {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // 场景切换时不销毁
+            // 不使用 DontDestroyOnLoad，让场景切换时自动销毁
+            // DontDestroyOnLoad(gameObject);
         }
         else {
             Destroy(gameObject);
@@ -479,16 +480,6 @@ public class GameManager : MonoBehaviour {
     public void PauseGame() {
         isPaused = true;
         Time.timeScale = 0f;
-
-        // 互斥逻辑：暂停时关闭商店面板
-        if (storePanel != null) {
-            storePanel.SetActive(false);
-        }
-
-        if (pausePanel != null) {
-            pausePanel.SetActive(true);
-        }
-        OnPauseStateChanged?.Invoke(true); // 通知暂停
         Debug.Log("游戏暂停");
     }
 
@@ -498,14 +489,6 @@ public class GameManager : MonoBehaviour {
     public void ResumeGame() {
         isPaused = false;
         Time.timeScale = 1f;
-        if (pausePanel != null) {
-            pausePanel.SetActive(false);
-        }
-        // 恢复游戏时确保商店也关闭
-        if (storePanel != null) {
-            storePanel.SetActive(false);
-        }
-        OnPauseStateChanged?.Invoke(false); // 通知恢复
         Debug.Log("游戏恢复");
     }
 

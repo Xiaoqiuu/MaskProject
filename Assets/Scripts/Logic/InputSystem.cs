@@ -41,7 +41,8 @@ public class InputSystem : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            // 不使用 DontDestroyOnLoad，让场景切换时自动销毁
+            // DontDestroyOnLoad(gameObject);
             
             if (showDebugLog)
             {
@@ -66,6 +67,15 @@ public class InputSystem : MonoBehaviour
         if (showDebugLog)
         {
             Debug.Log($"[InputSystem] 当前设置 - 模式: {currentInputMode}, 按键: {keyboardKey}");
+        }
+    }
+    
+    void OnDestroy()
+    {
+        // 清理单例引用
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
     

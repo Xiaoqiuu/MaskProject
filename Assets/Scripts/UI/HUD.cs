@@ -62,17 +62,6 @@ public class HUD : MonoBehaviour
             Debug.LogError("HUD: 请在 Inspector 中将 PausePanel 拖给 HUD 的 Panel 槽位！");
         }
 
-        if (StorePanel != null)
-        {
-            GameManager.Instance.storePanel = StorePanel;
-
-            ShopUI shopUI = StorePanel.GetComponent<ShopUI>();
-            if (shopUI != null)
-            {
-                shopUI.Init();
-            }
-        }
-
         // 订阅事件 - 使用方法引用
         GameManager.Instance.OnComboChanged += OnComboChanged;
         GameManager.Instance.OnSpecialPointChanged += OnSpecialPointChanged;
