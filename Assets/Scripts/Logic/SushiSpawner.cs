@@ -11,27 +11,19 @@ public class SushiSpawner : MonoBehaviour {
     public float maxTime = 2;
     public float targetTime = 0;
     public float curTime = 0;
-    public float originSpeed = 564f;
-    public float speedScale = 1.0f;
     [SerializeField] private SuShi suShiPrefab;
     [SerializeField] private List<Sprite> fishSprites;
     public GameObject belt;
-    
+
     [Header("寿司大小设置")]
     [Tooltip("寿司的缩放比例")]
     public float sushiScale = 2.0f;
 
     private void Awake() {
         GameManager.Instance.sushiSpawner = this;
-        GameManager.Instance.OnSpecialModeChanged += (bool isSpecialMode) => {
-            if (isSpecialMode) {
-                speedScale = 1.25f;
-            }
-            else {
-                speedScale = 1.0f;
-            }
+        GameManager.Instance.OnSpecialModeChanged += isSpecialMode => {
             Animator beletAnimator = belt.GetComponent<Animator>();
-            beletAnimator.speed = speedScale;
+            beletAnimator.speed = isSpecialMode ? 1.25f : 1.0f;
         };
     }
 
@@ -58,12 +50,11 @@ public class SushiSpawner : MonoBehaviour {
     protected void SpawnSushi() {
         SuShi sushi = Instantiate<SuShi>(suShiPrefab, this.transform);
         SetSushiType(sushi, GameManager.Instance.GetSuShiType());
-        
+
         // 设置寿司大小
         sushi.transform.localScale = Vector3.one * sushiScale;
-        
+
         Debug.Log($"sushi Type = {sushi.type}");
-        sushi.speed = originSpeed * speedScale;
         sushi.OnFishAdded += () => {
             GameManager.Instance.Success(sushi.bonus);
             Debug.Log("cur sushiCount = " + GameManager.Instance.sushiCount);
@@ -72,7 +63,7 @@ public class SushiSpawner : MonoBehaviour {
 
     protected void SetSushiType(SuShi sushi, int type) {
         sushi.type = type;
-        if (type < this.fishSprites.Count && this.fishSprites[type] != null) sushi.rice.GetComponent<Image>().sprite = this.fishSprites[type];
+        if (type < this.fishSprites.Count && this.fishSprites[type] != null) sushi.SetType(fishSprites[type]);
         sushi.bonus = GameManager.Instance.GetBonus(type);
     }
 }

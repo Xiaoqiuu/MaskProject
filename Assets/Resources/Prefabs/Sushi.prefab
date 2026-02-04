@@ -54,12 +54,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rice: {fileID: 5371969057198157467}
-  fish: {fileID: 0}
+  fishDry: {fileID: 4789126046394884055}
+  cover: {fileID: 4037036069426263207}
   surviveTime: 8
   type: 0
   bonus: 350
   hasAdd: 0
-  speed: 300
+  hasMiss: 0
+  speed: 564
+  speedScale: 1
   rect: {fileID: 6031995354293913284}
 --- !u!61 &5109086130469653079
 BoxCollider2D:
@@ -283,15 +286,15 @@ RectTransform:
   m_GameObject: {fileID: 5371969057198157467}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6031995354293913284}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.00012207031, y: 0.76}
-  m_SizeDelta: {x: 200, y: 100}
+  m_AnchoredPosition: {x: 5.24, y: 8.7}
+  m_SizeDelta: {x: 619, y: 506}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3871242173757899109
 CanvasRenderer:
