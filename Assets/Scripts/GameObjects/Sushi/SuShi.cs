@@ -10,9 +10,11 @@ public class SuShi : MonoBehaviour {
     public float surviveTime = 8f;
     public event Action OnFishAdded;
     public int type = 0;
-    public float bonus = 350;
+    public float bonus = 564f;
     public bool hasAdd = false;
-    
+    public float speed = 300f;
+
+    public RectTransform rect;
     private Image cover; // 盖子Image（自动查找）
     private GameObject fishDry; // 小鱼干对象（自动查找）
     private bool isSpecialMode = false; // 当前是否在特殊模式
@@ -97,7 +99,7 @@ public class SuShi : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-
+        rect.anchoredPosition += Vector2.right * speed * Time.deltaTime;
     }
 
     public void DoAddFish() {
@@ -109,6 +111,7 @@ public class SuShi : MonoBehaviour {
         }
         else {
             // 普通模式：隐藏寿司，显示盖子
+            //fish.gameObject.SetActive(false);
             Destroy(fish);
             
             if (cover != null) {
