@@ -395,8 +395,6 @@ MonoBehaviour:
     specialBonusLevel: 0
     lastPlayTime: 2026-02-01 10:10:57
     totalGamesPlayed: 0
-  pausePanel: {fileID: 0}
-  storePanel: {fileID: 0}
   resetSaveOnStart: 1
   bonusLevel: 0
   rateLevel: 0

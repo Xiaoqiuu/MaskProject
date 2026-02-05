@@ -5,20 +5,24 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class HUD : MonoBehaviour {
+    [Header("GamePlay UI")]
     [SerializeField] private Text CoinsCount;
     [SerializeField] private Text SpCount;
     [SerializeField] private Scrollbar SpBar;
     [SerializeField] private Text ComboCount;
     [SerializeField] private Text Combo;
-    [SerializeField] private Button PauseButton;
-    [SerializeField] private Button StoreButton;
-
-    [SerializeField] private GameObject Panel;
-    [SerializeField] private GameObject StorePanel;
+    
     [SerializeField] private Text Tip;
     [SerializeField] private Button TapButton;
 
+    [Header("Pause UI")]
+    [SerializeField] private Button PauseButton;
+    [SerializeField] private GameObject PausePanel;
+    [SerializeField] private Button ResumeButton;
+
     [Header("Shop UI")]
+    [SerializeField] private Button ShopButton;
+    [SerializeField] private GameObject ShopPanel;
     [SerializeField] private Button BuyBonusLevel;
     [SerializeField] private Button BuyRateLevel;
     [SerializeField] private Button BuySpLevel;
@@ -31,7 +35,7 @@ public class HUD : MonoBehaviour {
     [SerializeField] private Text RateLevel;
     [SerializeField] private Text SpLevel;
     [SerializeField] private Text SpecialBonusLevel;
-    
+    [SerializeField] private Button ShopExit;
 
     private bool IsMobileWebGL() {
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -51,21 +55,7 @@ public class HUD : MonoBehaviour {
         RatePrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Rate).ToString();
         SpPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Sp).ToString();
         SpecialBonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus).ToString();
-
-        if (Panel != null) {
-            GameManager.Instance.pausePanel = Panel;
-
-            Image panelImage = Panel.GetComponent<Image>();
-            if (panelImage == null) {
-                panelImage = Panel.AddComponent<Image>();
-            }
-            panelImage.color = new Color(1f, 1f, 1f, 0.85f);
-
-            Panel.SetActive(false);
-        }
-        else {
-            Debug.LogError("HUD: 请在 Inspector 中将 PausePanel 拖给 HUD 的 Panel 槽位！");
-        }
+        Tip.text = IsMobileWebGL() ? "▲TAP!" : "▲SPACE!";
 
         // 订阅事件 - 使用方法引用
         GameManager.Instance.OnComboChanged += OnComboChanged;
@@ -75,31 +65,42 @@ public class HUD : MonoBehaviour {
         GameManager.Instance.OnRateLevelChanged += OnRateLevelChanged;
         GameManager.Instance.OnSpLevelChanged += OnSpLevelChanged;
         GameManager.Instance.OnSpecialBonusLevelChanged += OnSpecialBonusLevelChanged;
-        GameManager.Instance.OnPauseStateChanged += OnPauseStateChanged;
 
         // 按钮事件
-        PauseButton.onClick.AddListener(() => GameManager.Instance.PauseGame());
+        
         BuyBonusLevel.onClick.AddListener(() => GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.Bonus));
         BuyRateLevel.onClick.AddListener(() => GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.Rate));
         BuySpLevel.onClick.AddListener(() => GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.Sp));
         BuySpecialBonusLevel.onClick.AddListener(() => GameManager.Instance.BuyUpgrade(GameManager.UpgradeType.SpecialBonus));
 
-        if (StoreButton != null) {
-            StoreButton.onClick.AddListener(() => {
-                Debug.Log("HUD: Store Button Clicked");
-                GameManager.Instance.OpenShop();
-            });
-        }
+        ShopButton.onClick.AddListener(() => {
+            Debug.Log("HUD: Store Button Clicked");
+            GameManager.Instance.PauseGame();
+            ShopPanel.SetActive(true);
+            PausePanel.SetActive(false);
+        });
 
-        if (Tip != null) {
-            Tip.text = IsMobileWebGL() ? "▲TAP!" : "▲SPACE!";
-        }
+        TapButton.onClick.AddListener(() => {
+            GameManager.Instance.Tap();
+        });
 
-        if (TapButton != null) {
-            TapButton.onClick.AddListener(() => {
-                GameManager.Instance.Tap();
-            });
-        }
+        ShopExit.onClick.AddListener(() => {
+            GameManager.Instance.ResumeGame();
+            ShopPanel.SetActive(false);
+            PausePanel.SetActive(false);
+        });
+
+        PauseButton.onClick.AddListener(() => {
+            GameManager.Instance.PauseGame();
+            ShopPanel.SetActive(false);
+            PausePanel.SetActive(true);
+        });
+
+        ResumeButton.onClick.AddListener(() => {
+            GameManager.Instance.ResumeGame();
+            PausePanel.SetActive(false);
+            ShopPanel.SetActive(false);
+        });
     }
 
     private void OnComboChanged(int combo) {
@@ -157,18 +158,8 @@ public class HUD : MonoBehaviour {
         SpecialBonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus).ToString();
     }
 
-    private void OnPauseStateChanged(bool isPaused) {
-        if (PauseButton != null) {
-            PauseButton.gameObject.SetActive(!isPaused);
-        }
-        if (StoreButton != null) {
-            StoreButton.gameObject.SetActive(!isPaused);
-        }
-    }
-
     private void OnDestroy() {
         if (GameManager.Instance != null) {
-            GameManager.Instance.OnPauseStateChanged -= OnPauseStateChanged;
             GameManager.Instance.OnComboChanged -= OnComboChanged;
             GameManager.Instance.OnSpecialPointChanged -= OnSpecialPointChanged;
             GameManager.Instance.OnMoneyChanged -= OnMoneyChanged;

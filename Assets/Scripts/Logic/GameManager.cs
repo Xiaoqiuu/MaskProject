@@ -27,10 +27,6 @@ public class GameManager : MonoBehaviour {
     // 游戏数据
     public GameData gameData;
 
-    [Header("UI引用")]
-    public GameObject pausePanel; // 暂停界面
-    public GameObject storePanel;  // 商店界面
-
     private bool isPaused = false;
 
     [Header("调试选项")]
@@ -422,52 +418,6 @@ public class GameManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// 打开商店（绑定到商店按钮）
-    /// </summary>
-    public void OpenShop() {
-        Debug.Log($"尝试打开商店... storePanel is null? {storePanel == null}");
-
-        if (storePanel != null) {
-            // 尝试使用 ShopUI 脚本逻辑
-            ShopUI shopUI = storePanel.GetComponent<ShopUI>();
-            if (shopUI != null) {
-                Debug.Log("调用 ShopUI.OpenShop()");
-                shopUI.OpenShop();
-            }
-            else {
-                Debug.Log("直接激活 storePanel");
-                storePanel.SetActive(true);
-            }
-
-            // 暂停时间，但不显示暂停菜单
-            isPaused = true;
-            Time.timeScale = 0f;
-            OnPauseStateChanged?.Invoke(true);
-        }
-        else {
-            Debug.LogError("打开商店失败：storePanel 未赋值！请在 Inspector 中将 ShopPanel 拖给 GameManager 的 Store Panel 字段。");
-        }
-    }
-
-    /// <summary>
-    /// 关闭商店
-    /// </summary>
-    public void CloseShop() {
-        if (storePanel != null) {
-            ShopUI shopUI = storePanel.GetComponent<ShopUI>();
-            if (shopUI != null) {
-                shopUI.CloseShop();
-            }
-            else {
-                storePanel.SetActive(false);
-            }
-
-            // 恢复游戏
-            ResumeGame();
-        }
-    }
-
-    /// <summary>
     /// 切换暂停状态（绑定到暂停按钮）
     /// </summary>
     public void TogglePause() {
@@ -483,6 +433,7 @@ public class GameManager : MonoBehaviour {
     /// 暂停游戏
     /// </summary>
     public void PauseGame() {
+        if (isPaused) return;
         isPaused = true;
         Time.timeScale = 0f;
         Debug.Log("游戏暂停");
@@ -492,6 +443,7 @@ public class GameManager : MonoBehaviour {
     /// 恢复游戏
     /// </summary>
     public void ResumeGame() {
+        if (!isPaused) return;
         isPaused = false;
         Time.timeScale = 1f;
         Debug.Log("游戏恢复");
