@@ -132,6 +132,7 @@ public class GameManager : MonoBehaviour {
             }
         };
         InputSystem.OnPlayerInput += () => {
+            if (isPaused) return;
             OnTap?.Invoke();
         };
     }
@@ -457,6 +458,7 @@ public class GameManager : MonoBehaviour {
     }
 
     public void Tap() {
+        if (isPaused) return;
         OnTap?.Invoke();
     }
 }

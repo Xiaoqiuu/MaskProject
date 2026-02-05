@@ -2101,7 +2101,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1976913084303286653, guid: fafe2de6a2e2d1f4dbdb83307a9b3626, type: 3}
       propertyPath: m_Text
-      value: "~\u66F4\u9AD8\u4EF7\u683C\u7684\"\u734E\u52F5\u6642\u9593\""
+      value: "~\u66F4\u9AD8\u5206\u6570\u7684\u5C0F\u9B5A\u5E79"
       objectReference: {fileID: 0}
     - target: {fileID: 1985435857065885157, guid: fafe2de6a2e2d1f4dbdb83307a9b3626, type: 3}
       propertyPath: m_Pivot.x
@@ -2201,7 +2201,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8271460559650059692, guid: fafe2de6a2e2d1f4dbdb83307a9b3626, type: 3}
       propertyPath: m_Text
-      value: "\"\u734E\u52F5\u6642\u9593\"\u62C6\u958B\u7684\u793C\u7269\u5206\u6570\u66F4\u9AD8"
+      value: "\"\u734E\u52F5\u6642\u9593\"\u5403\u5C0F\u9B5A\u5E79\u7684\u5206\u6570\u66F4\u9AD8"
       objectReference: {fileID: 0}
     - target: {fileID: 8992496313982940808, guid: fafe2de6a2e2d1f4dbdb83307a9b3626, type: 3}
       propertyPath: m_AnchoredPosition.x
