@@ -68,6 +68,7 @@ public class GameManager : MonoBehaviour {
     public event Action<int> OnRateLevelChanged;
     public event Action<int> OnSpLevelChanged;
     public event Action<int> OnSpecialBonusLevelChanged;
+    public event Action OnTap;
 
     // 获取当前时间的方法
     public float GetCurrentTime() {
@@ -133,6 +134,9 @@ public class GameManager : MonoBehaviour {
                 isSpecialMode = true;
                 OnSpecialModeChanged?.Invoke(isSpecialMode);
             }
+        };
+        InputSystem.OnPlayerInput += () => {
+            OnTap?.Invoke();
         };
     }
 
@@ -221,6 +225,7 @@ public class GameManager : MonoBehaviour {
     /// 游戏结束时调用
     /// </summary>
     public void GameOver() {
+        ResumeGame();
         // 停止生成寿司
         if (sushiSpawner != null) {
             sushiSpawner.isOn = false;
@@ -237,7 +242,7 @@ public class GameManager : MonoBehaviour {
         rates = null;
         total = 0;
         Debug.Log($"游戏结束 - 本局金币: {Money}, 本局寿司数: {sushiCount}");
-        
+
         // 触发场景过渡动画
         GameSceneTransition transition = FindObjectOfType<GameSceneTransition>();
         if (transition != null) {
@@ -497,5 +502,9 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     public bool IsPaused() {
         return isPaused;
+    }
+
+    public void Tap() {
+        OnTap?.Invoke();
     }
 }
