@@ -53,12 +53,16 @@ public class HUD : MonoBehaviour {
 
         BonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Bonus).ToString();
         BuyBonusLevel.interactable = GameManager.Instance.Money > GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Bonus);
+
         RatePrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Rate).ToString();
         BuyRateLevel.interactable = GameManager.Instance.Money > GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Rate);
+
         SpPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Sp).ToString();
         BuySpLevel.interactable = GameManager.Instance.Money > GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Sp);
+
         SpecialBonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus).ToString();
         BuySpecialBonusLevel.interactable = GameManager.Instance.Money > GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus);
+
         Tip.text = IsMobileWebGL() ? "▲TAP!" : "▲SPACE!";
         TapButton.gameObject.SetActive(IsMobileWebGL());
 
@@ -133,6 +137,10 @@ public class HUD : MonoBehaviour {
         if (CoinsCount == null) return;
 
         CoinsCount.text = "￥" + money.ToString();
+        BuyBonusLevel.interactable = GameManager.Instance.Money > GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Bonus);
+        BuyRateLevel.interactable = GameManager.Instance.Money > GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Rate);
+        BuySpLevel.interactable = GameManager.Instance.Money > GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.Sp);
+        BuySpecialBonusLevel.interactable = GameManager.Instance.Money > GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus);
     }
 
     private void OnBonusLevelChanged(int bonusLevel) {
