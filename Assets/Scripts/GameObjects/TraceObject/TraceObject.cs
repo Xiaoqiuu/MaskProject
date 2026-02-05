@@ -8,14 +8,16 @@ public class TraceObject : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        InputSystem.OnPlayerInput += () => {
-            if (TraceSuShi) {
-                TraceSuShi.AddFish();
-            }
-            else {
-                GameManager.Instance.Miss();
-            }
-        };
+        GameManager.Instance.OnTap += TryAddFish;
+    }
+
+    private void TryAddFish() {
+        if (TraceSuShi) {
+            TraceSuShi.AddFish();
+        }
+        else {
+            GameManager.Instance.Miss();
+        }
     }
 
     // Update is called once per frame

@@ -34,11 +34,6 @@ public class ShopUI : MonoBehaviour {
     
     public void Init() {
         if (isInitialized) return;
-        
-        // 自动将 StorePanel 注册给 GameManager
-        if (GameManager.Instance != null) {
-            GameManager.Instance.storePanel = this.gameObject;
-        }
 
         // 容错：如果 panelRoot 未赋值，尝试自动获取
         if (panelRoot == null) {

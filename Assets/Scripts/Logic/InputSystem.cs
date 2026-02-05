@@ -34,7 +34,15 @@ public class InputSystem : MonoBehaviour
     
     // 输入事件 - 其他脚本可以订阅这个事件
     public static event Action OnPlayerInput;
-    
+
+    private bool IsMobileWebGL() {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            if (Input.touchSupported && !Input.mousePresent)
+                return true;
+#endif
+        return Application.isMobilePlatform;
+    }
+
     void Awake()
     {
         // 单例模式实现
@@ -58,7 +66,7 @@ public class InputSystem : MonoBehaviour
         LoadInputSettings();
         
         // 自动适配移动平台
-        if (Application.isMobilePlatform)
+        if (IsMobileWebGL())
         {
             currentInputMode = InputMode.Touch;
             Debug.Log("[InputSystem] 检测到移动平台，自动切换为 Touch 模式");

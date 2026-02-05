@@ -65,7 +65,8 @@ public class CharacterAnimation : MonoBehaviour
     void OnEnable()
     {
         // 订阅输入事件
-        InputSystem.OnPlayerInput += OnPlayerInputReceived;
+        GameManager.Instance.OnTap += OnPlayerInputReceived;
+        //InputSystem.OnPlayerInput += OnPlayerInputReceived;
         
         // 重置到初始状态
         if (characterImage != null)
