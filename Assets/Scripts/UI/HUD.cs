@@ -60,6 +60,7 @@ public class HUD : MonoBehaviour {
         SpecialBonusPrice.text = GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus).ToString();
         BuySpecialBonusLevel.interactable = GameManager.Instance.Money > GameManager.Instance.GetUpgradePrice(GameManager.UpgradeType.SpecialBonus);
         Tip.text = IsMobileWebGL() ? "▲TAP!" : "▲SPACE!";
+        TapButton.gameObject.SetActive(IsMobileWebGL());
 
         // 订阅事件 - 使用方法引用
         GameManager.Instance.OnComboChanged += OnComboChanged;
