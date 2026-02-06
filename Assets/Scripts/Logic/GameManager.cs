@@ -384,6 +384,17 @@ public class GameManager : MonoBehaviour {
         OnComboChanged?.Invoke(combo);
 
         if (!isSpecialMode) {
+            specialPoint = Math.Min(GameBalance.MaxSp, Math.Max(0, specialPoint - 10));
+            Debug.Log($"SpecialPoint = {specialPoint}");
+            OnSpecialPointChanged?.Invoke(specialPoint);
+        }
+    }
+
+    public void Lose() {
+        combo = 0;
+        OnComboChanged?.Invoke(combo);
+
+        if (!isSpecialMode) {
             Money = Math.Max(0, Money - 500);
             OnMoneyChanged?.Invoke(Money);
 
@@ -391,7 +402,6 @@ public class GameManager : MonoBehaviour {
             Debug.Log($"SpecialPoint = {specialPoint}");
             OnSpecialPointChanged?.Invoke(specialPoint);
         }
-
 
         if (Money == 0) {
             GameOver();

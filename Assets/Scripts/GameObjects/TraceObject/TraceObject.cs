@@ -33,7 +33,7 @@ public class TraceObject : MonoBehaviour
         }
         else {
             if (TraceSuShi != null && !TraceSuShi.hasAdd) {
-                TraceSuShi.Miss();
+                TraceSuShi.Lose();
             }
             TraceSuShi = null;
             //Debug.Log($"hit = Nothing");

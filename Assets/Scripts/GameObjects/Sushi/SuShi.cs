@@ -13,7 +13,7 @@ public class SuShi : MonoBehaviour {
     public int type = 0;
     public float bonus = 564f;
     public bool hasAdd = false;
-    public bool hasMiss = false;
+    public bool hasLose = false;
     public float speed = 564f;
     public float speedScale = 1f;
 
@@ -45,7 +45,7 @@ public class SuShi : MonoBehaviour {
     private void OnSpecialModeChanged(bool isSpecial) {
         isSpecialMode = isSpecial;
         speedScale = isSpecial ? 1.25f : 1.0f;
-        if (hasMiss || hasAdd) return;
+        if (hasLose || hasAdd) return;
         if (isSpecial) {
             // 特殊模式：隐藏寿司，显示小鱼干
             if (rice != null) {
@@ -99,9 +99,9 @@ public class SuShi : MonoBehaviour {
         OnFishAdded?.Invoke();
     }
 
-    public void Miss() {
-        hasMiss = true;
-        GameManager.Instance.Miss();
+    public void Lose() {
+        hasLose = true;
+        GameManager.Instance.Lose();
     }
 
     public void SetType(Sprite sprite) {
